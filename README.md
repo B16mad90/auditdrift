@@ -22,8 +22,16 @@ node auditdrift.mjs ./alchemix-v3 8dd21a2 master
 
 Output (excerpt, real run on Alchemix V3, audited commit → master, 6 months apart):
 
+```
+## Storage layout (state variable) changes
+| File | Contract | Verdict | Details |
+|------|----------|---------|---------|
+| `src/strategies/EtherfiEETHStrategy.sol` | EtherfiEETHMYTStrategy | LAYOUT SHIFT — inserted before existing vars | BPS, MAX_GROSS_REDEEM_AMOUNT_BUFFER, … |
+| `src/strategies/ERC4626Strategy.sol` | ERC4626Strategy | appended-only (layout stable) | canForceDeallocate |
+```
+
 Full sample reports from real runs are in [`examples/`](examples/):
-- [Alchemix V3](examples/alchemix-v3-sample-report.md) — 158 files changed, 21 high-risk (new unaudited strategies, storage-layout churn)
+- [Alchemix V3](examples/alchemix-v3-sample-report.md) — 158 files changed, 21 high-risk, 4 storage-layout shifts detected, plus a Zellic audit PDF scope cross-reference
 - [Uniswap v3-core](examples/uniswap-v3-core-sample-report.md) — 1.0.0 → HEAD, 1 high-risk hit in `Tick.sol`
 
 ```
@@ -41,10 +49,28 @@ Full sample reports from real runs are in [`examples/`](examples/):
 ...
 ```
 
+## Storage layout diff
+
+For every **modified** Solidity file, auditdrift parses the declared state variables at both commits (heuristic v1: top-level vars of each contract, in declaration order) and detects the bug class that matters most for upgrades:
+
+- **LAYOUT SHIFT** — a state var removed, or inserted *before* existing vars (breaks storage of any deployed instance)
+- **appended-only** — new var(s) after all old ones (layout stays stable)
+
+## Audit scope cross-reference (`--audit-pdf`)
+
+Pass one or more audit report PDFs:
+
+```bash
+node auditdrift.mjs ./my-repo d3756dd HEAD --audit-pdf ./audits/2025-07-15-zellic.pdf
+```
+
+It extracts the file paths declared in the PDF's scope section, matches them to repo files, and tells you exactly **how many audited files changed since the audited commit** — with status and risk score. Requires `python` with `pypdf` on PATH.
+
 ## What it flags (risk heuristics)
 
 | Signal | Weight |
 |--------|--------|
+| Storage layout shift (state var removed/inserted) | +3 each |
 | New file (never audited) | +3 |
 | Storage state added (mappings, structs) — layout risk | +3 each |
 | Access-control / modifier churn (onlyOwner, roles, pausable, reentrancyGuard) | +3 |
@@ -62,13 +88,10 @@ Files are classified first (solidity / rust / foundry scripts / tests / config /
 
 ## Status & roadmap
 
-- [x] **PoC (this repo):** single-repo scan, git-diff based, markdown + JSON output, ~300 lines, zero dependencies beyond Node + git
-- [ ] `--audit-pdf` mode: ingest audit report PDFs, map scope files per audit, produce a per-audit "in scope & changed" matrix
-- [ ] Storage-layout diff: parse Solidity structs/state vars at both commits, detect layout shifts (the #1 real bug class in post-audit drift)
-- [ ] GitHub Action: open an issue when a repo's post-audit drift exceeds a threshold — free for every project with an audit
-- [ ] Multi-audit mode: repo with N audits → N×M (audit × file) coverage matrix
-- [ ] Foundry integration: `drift check` target that can be added to any repo's CI
-- [ ] Docs site + hosted demo (free tier)
+- [x] **M1 (this repo):** single-repo scan, git-diff based, risk scoring, **storage-layout diff**, **`--audit-pdf` scope cross-reference** (multi-PDF), markdown + JSON output, zero npm dependencies (Node + git + optional python/pypdf). Validated on real audited repos: Alchemix V3 (4 real storage-layout shifts found) and Uniswap v3-core.
+- [ ] **M2:** GitHub Action (flag post-audit drift in CI), Foundry `drift check` target, multi-audit coverage matrix (N audits × M files)
+- [ ] **M3:** Rust/Anchor state diff for Solana programs, docs site + hosted demo (free tier)
+- [ ] Hardened Solidity layout parser (multi-line structs, nested contracts, pragma/version-aware)
 
 ## Why this is a public good
 
@@ -79,8 +102,8 @@ Files are classified first (solidity / rust / foundry scripts / tests / config /
 
 ## License
 
-MIT (to be finalized)
+MIT
 
 ## Author
 
-Built by an independent security researcher who does this triage manually every day across multiple active bug bounties. This PoC is the exact workflow, codified.
+Built by an independent security researcher who does this triage manually every day across multiple active bug bounties. This PoC is the exact workflow, codified. Project seeking ecosystem support (EF ESP / Gitcoin) — see [GRANT_APPLICATIONS.md](GRANT_APPLICATIONS.md) for the public milestone plan.

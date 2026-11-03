@@ -74,10 +74,10 @@ Drafter utkast. Fyll inn navn/GitHub og tilpass før innsending.
 
 ---
 
-## Aksjonplan
+## Aksjonplan (status 2026-11-03)
 
-1. **Opprett GitHub-repo** `auditdrift` (public, MIT) — PoC + README + én sample-report. *(Kan jeg gjøre når du godkjenner repo-navn.)*
-2. **ESP Office Hours** — book via hey.xyz/u/ef_esp eller Twitter, presentér PoC.
+1. ~~**Opprett GitHub-repo** `auditdrift` (public, MIT)~~ — **FERTIG:** https://github.com/B16mad90/auditdrift (MIT, PoC + 2 sample-rapporter)
+2. **ESP Office Hours** — book via hey.xyz/u/ef_esp eller Twitter. Prep: [ESP_OFFICE_HOURS.md](ESP_OFFICE_HOURS.md) (2-min pitch + Q&A, live-demo-kommando).
 3. **ESP Direct Grant** — send inn med milestone-budget over.
-4. **Gitcoin Builder-profil** — lag profil, vent på neste runde, søk med "proof of work"-lenke.
-5. **Bygg M1** (audit-PDF + storage-layout diff) mens søknadene er under behandling — synlig fremdrift styrker begge.
+4. **Gitcoin Builder-profil** — innhold klart i [GITCOIN_BUILDER.md](GITCOIN_BUILDER.md); lag profilen i Builder, søk i neste kvartalsrunde. QF-triks: bygg i public + 10–30 små donasjoner før runden.
+5. ~~**Bygg M1** (audit-PDF + storage-layout diff)~~ — **FERTIG** (M1 er i repoet; sample-rapportene viser begge funksjonene)
