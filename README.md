@@ -55,8 +55,8 @@ For every **modified** Solidity file, auditdrift parses the declared state varia
 
 **Known v1 limitations (honest):** does not handle inherited state variables, packed variables (multiple per storage slot), multi-line structs, or pragma/version-specific behavior. Deterministic (same input → same output), but determinism ≠ correctness: results are signals to investigate, not verified findings. A layout shift is only unsafe for an *existing deployed instance* that is upgraded in place — a fresh deployment is unaffected. Risk scores are heuristic weights, not validated.
 
-- **LAYOUT SHIFT** — a state var removed, or inserted *before* existing vars (breaks storage of any deployed instance)
-- **appended-only** — new var(s) after all old ones (layout stays stable)
+- **LAYOUT SHIFT** — a state var removed, or inserted *before* existing vars (may affect storage compatibility for in-place upgrades; manual verification required)
+- **appended-only** — new var(s) after the parsed old declarations (not a proof of layout compatibility, especially with inheritance or packing)
 
 ## Audit scope cross-reference (`--audit-pdf`)
 
@@ -90,7 +90,7 @@ Files are classified first (solidity / rust / foundry scripts / tests / config /
 
 ## Status & roadmap
 
-- [x] **M1 (this repo):** single-repo scan, git-diff based, risk scoring, **storage-layout diff**, **`--audit-pdf` scope cross-reference** (multi-PDF), markdown + JSON output, zero npm dependencies (Node + git + optional python/pypdf). Validated on real audited repos: Alchemix V3 (4 real storage-layout shifts found) and Uniswap v3-core.
+- [x] **M1 (this repo):** single-repo scan, git-diff based, risk scoring, **storage-layout diff**, **`--audit-pdf` scope cross-reference** (multi-PDF), markdown + JSON output, zero npm dependencies (Node + git + optional python/pypdf). Validated on real audited repos: Alchemix V3 (4 files flagged for potential layout changes; manual review required) and Uniswap v3-core.
 - [ ] **M2:** GitHub Action (flag post-audit drift in CI), Foundry `drift check` target, multi-audit coverage matrix (N audits × M files)
 - [ ] **M3:** Rust/Anchor state diff for Solana programs, docs site + hosted demo (free tier)
 - [ ] Hardened Solidity layout parser (multi-line structs, nested contracts, pragma/version-aware)
