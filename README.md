@@ -31,7 +31,7 @@ Output (excerpt, real run on Alchemix V3, audited commit → master, 6 months ap
 ```
 
 Full sample reports from real runs are in [`examples/`](examples/):
-- [Alchemix V3](examples/alchemix-v3-sample-report.md) — 158 files changed, 21 high-risk, 4 storage-layout shifts detected, plus a Zellic audit PDF scope cross-reference
+- [Alchemix V3](examples/alchemix-v3-sample-report.md) — 158 files changed, 21 high-risk, 4 files with potential storage-layout changes since the audited commit (signals for manual review, not confirmed issues), plus an audit PDF scope cross-reference
 - [Uniswap v3-core](examples/uniswap-v3-core-sample-report.md) — 1.0.0 → HEAD, 1 high-risk hit in `Tick.sol`
 
 ```
@@ -51,7 +51,9 @@ Full sample reports from real runs are in [`examples/`](examples/):
 
 ## Storage layout diff
 
-For every **modified** Solidity file, auditdrift parses the declared state variables at both commits (heuristic v1: top-level vars of each contract, in declaration order) and detects the bug class that matters most for upgrades:
+For every **modified** Solidity file, auditdrift parses the declared state variables at both commits (heuristic v1: single-line, top-level vars of each contract, in declaration order) and detects the bug class that matters most for upgrades:
+
+**Known v1 limitations (honest):** does not handle inherited state variables, packed variables (multiple per storage slot), multi-line structs, or pragma/version-specific behavior. Deterministic (same input → same output), but determinism ≠ correctness: results are signals to investigate, not verified findings. A layout shift is only unsafe for an *existing deployed instance* that is upgraded in place — a fresh deployment is unaffected. Risk scores are heuristic weights, not validated.
 
 - **LAYOUT SHIFT** — a state var removed, or inserted *before* existing vars (breaks storage of any deployed instance)
 - **appended-only** — new var(s) after all old ones (layout stays stable)
@@ -106,4 +108,4 @@ MIT
 
 ## Author
 
-Built by an independent security researcher who does this triage manually every day across multiple active bug bounties. This PoC is the exact workflow, codified. Project seeking ecosystem support (EF ESP / Gitcoin) — see [GRANT_APPLICATIONS.md](GRANT_APPLICATIONS.md) for the public milestone plan.
+Built by an independent security researcher who does this triage manually every day across multiple active bug bounties. This PoC is the exact workflow, codified. Seeking ecosystem support (EF ESP / Gitcoin / Superteam) — the current ask is a 6-week, $5k pilot to make the tool reliable and measurable (regression suite, benchmark, hardened parser, GitHub Action, limits doc); see the project's public updates for the full plan.
